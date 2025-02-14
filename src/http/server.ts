@@ -1,4 +1,5 @@
 import fastifySwagger from '@fastify/swagger'
+import fastifySwaggerUI from '@fastify/swagger-ui'
 import fastify from 'fastify'
 import type { FastifyInstance } from 'fastify/types/instance'
 import {
@@ -9,6 +10,7 @@ import {
 import { env } from '@/env'
 
 import { errorHandler } from './error-handler'
+import { createUserRoute } from './routes/create-user'
 import { transformSwaggerSchema } from './transform-schema'
 
 const app: FastifyInstance = buildFastifyInstance()
@@ -48,8 +50,13 @@ export function startServer() {
       }
     },
   })
+  app.register(fastifySwaggerUI, {
+    routePrefix: '/docs',
+  })
 
   app.setErrorHandler(errorHandler)
+
+  app.register(createUserRoute)
 
   app
     .listen({
