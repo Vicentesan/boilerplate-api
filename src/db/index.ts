@@ -5,5 +5,5 @@ import * as schema from './schemas'
 
 export const db = drizzle(env.DATABASE_URL, {
   schema,
-  logger: env.NODE_ENV !== 'production',
+  logger: env.NODE_ENV !== 'prod',
 })
