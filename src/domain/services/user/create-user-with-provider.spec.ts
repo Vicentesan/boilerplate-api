@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createGoogleUser } from './create-user-with-google'
-import { createUser } from './create-user-with-provider'
+import { createUserWithProvider } from './create-user-with-provider'
 
 vi.mock('./create-user-with-google', () => ({
   createGoogleUser: vi.fn(),
@@ -29,7 +29,7 @@ describe('createUser', () => {
     it('should call createGoogleUser with the provided code', async () => {
       vi.mocked(createGoogleUser).mockResolvedValueOnce({ user: mockUser })
 
-      const result = await createUser({
+      const result = await createUserWithProvider({
         provider: 'GOOGLE',
         code: mockCode,
       })
@@ -44,7 +44,7 @@ describe('createUser', () => {
       vi.mocked(createGoogleUser).mockRejectedValueOnce(error)
 
       await expect(
-        createUser({
+        createUserWithProvider({
           provider: 'GOOGLE',
           code: mockCode,
         }),

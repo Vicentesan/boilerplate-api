@@ -7,7 +7,7 @@ export interface CreateUserParams {
   code: string
 }
 
-export async function createUser(params: CreateUserParams) {
+export async function createUserWithProvider(params: CreateUserParams) {
   const { code, provider } = params
 
   switch (provider) {
