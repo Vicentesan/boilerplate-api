@@ -10,10 +10,12 @@ export async function insertUser(props: InsertUserModel) {
 }
 
 export async function findUserByEmail(email: string) {
-  const [user] = await db
+  const user = await db
     .select()
     .from(users)
     .where(eq(users.email, email.toLocaleLowerCase()))
 
-  return user
+  if (user.length === 0) return null
+
+  return user[0]
 }
