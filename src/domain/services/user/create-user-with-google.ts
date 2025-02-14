@@ -1,4 +1,8 @@
-import { findUserByEmail, insertUser } from '@/db/repositories/user-repository'
+import {
+  findUserByEmail,
+  insertUser,
+  updateUser,
+} from '@/db/repositories/user-repository'
 import { googleClient, oauth2 } from '@/lib/google'
 import { BadRequestError } from '@/shared/errors/bad-request-error'
 import { ConflictError } from '@/shared/errors/conflict-error'
@@ -18,7 +22,29 @@ export async function createGoogleUser(code: string) {
     const existingUser = await findUserByEmail(email)
 
     if (existingUser) {
-      throw new ConflictError('Email already in use')
+      if (
+        existingUser.provider &&
+        existingUser.providerId &&
+        existingUser.password
+      ) {
+        throw new ConflictError('Email already in use')
+      }
+
+      if (
+        !existingUser.provider &&
+        !existingUser.providerId &&
+        existingUser.password
+      ) {
+        const [user] = await updateUser(existingUser.id, {
+          provider: 'GOOGLE',
+          providerId: userInfo.data.id,
+        })
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password: _removedPassword, ...formattedUser } = user
+
+        return { user: formattedUser }
+      }
     }
 
     const [user] = await insertUser({

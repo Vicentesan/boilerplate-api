@@ -1,7 +1,11 @@
 import { faker } from '@faker-js/faker'
 import { type Credentials } from 'google-auth-library'
 
-import { findUserByEmail, insertUser } from '@/db/repositories/user-repository'
+import {
+  findUserByEmail,
+  insertUser,
+  updateUser,
+} from '@/db/repositories/user-repository'
 import { type InsertUserModel, type User } from '@/domain/entities/user'
 import { googleClient, oauth2 } from '@/lib/google'
 import { BadRequestError } from '@/shared/errors/bad-request-error'
@@ -12,6 +16,7 @@ import { createGoogleUser } from './create-user-with-google'
 vi.mock('@/db/repositories/user-repository', () => ({
   findUserByEmail: vi.fn(),
   insertUser: vi.fn(),
+  updateUser: vi.fn(),
 }))
 
 type MockGoogleClient = {
@@ -111,28 +116,45 @@ describe('Create Google User', () => {
     )
   })
 
-  it('should throw ConflictError when email is already in use', async () => {
-    vi.mocked(findUserByEmail).mockResolvedValueOnce(mockUser)
+  it('should throw ConflictError when user exists with both provider and password', async () => {
+    const existingUser: User = {
+      ...mockUser,
+      password: 'hashed_password',
+    }
+
+    vi.mocked(findUserByEmail).mockResolvedValueOnce(existingUser)
 
     await expect(createGoogleUser(mockCode)).rejects.toThrow(
       new ConflictError('Email already in use'),
     )
   })
 
-  it('should throw BadRequestError when authorization code is invalid', async () => {
-    const error = new Error('Invalid grant') as Error & {
-      response: { data: { error: string } }
-    }
-    error.response = {
-      data: {
-        error: 'invalid_grant',
-      },
+  it('should add Google provider to existing user with password only', async () => {
+    const existingUser: User = {
+      ...mockUser,
+      provider: null,
+      providerId: null,
+      password: 'hashed_password',
     }
 
-    vi.mocked(googleClient.getToken).mockRejectedValueOnce(error)
+    const updatedUser: User = {
+      ...existingUser,
+      provider: 'GOOGLE',
+      providerId: mockUserInfo.data.id,
+    }
 
-    await expect(createGoogleUser(mockCode)).rejects.toThrow(
-      new BadRequestError('Invalid or expired authorization code'),
+    vi.mocked(findUserByEmail).mockResolvedValueOnce(existingUser)
+    vi.mocked(updateUser).mockResolvedValueOnce([updatedUser])
+
+    const result = await createGoogleUser(mockCode)
+
+    expect(result.user).toEqual(
+      expect.objectContaining({
+        id: existingUser.id,
+        email: existingUser.email,
+        provider: 'GOOGLE',
+        providerId: mockUserInfo.data.id,
+      }),
     )
   })
 

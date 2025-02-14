@@ -45,7 +45,6 @@ describe('Create User With Provider Controller', () => {
         id: faker.string.uuid(),
         name: faker.person.fullName(),
         email: faker.internet.email(),
-        password: null,
         avatarUrl: faker.internet.url(),
         provider: 'GOOGLE',
         providerId: faker.string.uuid(),

@@ -19,3 +19,7 @@ export async function findUserByEmail(email: string) {
 
   return user[0]
 }
+
+export async function updateUser(id: string, props: Partial<InsertUserModel>) {
+  return await db.update(users).set(props).where(eq(users.id, id)).returning()
+}
