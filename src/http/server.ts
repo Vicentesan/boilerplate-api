@@ -28,7 +28,7 @@ export function startServer() {
       },
       servers: [
         {
-          url: env.BASE_URL,
+          url: `http://localhost:${env.PORT}`,
           description: 'Development server',
         },
       ],
@@ -64,7 +64,7 @@ export function startServer() {
       host: '0.0.0.0',
     })
     .then(() => {
-      console.info(`HTTP server running at ${env.BASE_URL}`)
+      console.info(`HTTP server running at http://localhost:${env.PORT}`)
     })
 }
 

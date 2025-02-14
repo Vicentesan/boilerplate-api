@@ -28,6 +28,9 @@ export async function createUserRoute(app: FastifyInstance) {
               })
               .array(),
           }),
+          409: z.object({
+            message: z.literal('Email already in use'),
+          }),
         },
       },
     },
